@@ -12,8 +12,11 @@ public enum ErrorCode {
 
   // Auth
   INVALID_EMAIL_FORMAT(400, "A004001", "올바른 이메일 형식이 아닙니다."),
-  NOTFOUND_USERNAME(400, "A004002", "아이디 또는 비밀번호를 확인해주세요."),
-  EXIST_USERNAME(400, "A004003", "이미 사용 중인 아이디입니다.")
+  NOT_FOUND_USERNAME(400, "A004002", "아이디 또는 비밀번호를 확인해주세요."),
+  EXIST_USERNAME(400, "A004003", "이미 사용 중인 아이디입니다."),
+  NOT_FOUND_REFRESH_TOKEN(400, "A004004", "RefreshToken을 찾을 수 없습니다."),
+  EXPIRED_TOKEN(400, "A004005", "만료된 토큰입니다."),
+  INVALID_SIGNATURE_VERIFICATION(400, "A004006", "잘못된 토큰 서명입니다.")
 
   ;
 

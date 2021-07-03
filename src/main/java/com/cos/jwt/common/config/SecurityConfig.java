@@ -3,7 +3,9 @@ package com.cos.jwt.common.config;
 import com.cos.jwt.business.user.application.UserRepository;
 import com.cos.jwt.common.jwt.JwtAuthenticationFilter;
 import com.cos.jwt.common.jwt.JwtAuthorizationFilter;
-import com.cos.jwt.common.jwt.JwtUtil;
+import com.cos.jwt.common.jwt.JwtLogoutFilter;
+import com.cos.jwt.common.jwt.JwtLogoutSuccessFilter;
+import com.cos.jwt.common.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +22,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
   private final CorsConfig corsConfig;
   private final UserRepository userRepository;
-  private final JwtUtil jwtUtil;
+  private final RedisUtil redisUtil;
 
   @Bean
   public BCryptPasswordEncoder passwordEncoder() {
@@ -36,7 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
       .and()
       .formLogin().disable()
       .httpBasic().disable()
-      .addFilter(new JwtAuthenticationFilter(authenticationManager(), jwtUtil)) // AuthenticationManager
+      .addFilter(new JwtAuthenticationFilter(authenticationManager(),redisUtil)) // AuthenticationManager
       .addFilter(new JwtAuthorizationFilter(authenticationManager(), userRepository))
       .authorizeRequests()
 			.antMatchers("/user/**")
@@ -44,7 +46,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			.antMatchers("/admin/**")
 				.access("hasRole('ROLE_ADMIN')")
       .anyRequest().permitAll()
-
+      .and()
+      .logout()
+      .addLogoutHandler(new JwtLogoutFilter(redisUtil))
+      .logoutSuccessHandler(new JwtLogoutSuccessFilter())
+      .invalidateHttpSession(true)
     ;
   }
 }

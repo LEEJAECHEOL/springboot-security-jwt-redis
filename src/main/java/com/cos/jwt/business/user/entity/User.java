@@ -2,10 +2,7 @@ package com.cos.jwt.business.user.entity;
 
 import com.cos.jwt.business.user.enumerated.Role;
 import com.cos.jwt.common.entity.BasicEntity;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 

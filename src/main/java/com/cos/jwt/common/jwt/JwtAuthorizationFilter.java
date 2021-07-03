@@ -1,11 +1,9 @@
 package com.cos.jwt.common.jwt;
 
-
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.cos.jwt.business.user.application.UserRepository;
 import com.cos.jwt.business.user.entity.User;
 import com.cos.jwt.common.auth.PrincipalDetails;
+import com.cos.jwt.common.util.JwtUtil;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -32,15 +30,15 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
     throws IOException, ServletException {
 
-    String jwtHeader = request.getHeader(JwtProperties.HEADER_STRING);
+    String jwtHeader = request.getHeader(JwtUtil.HEADER_STRING);
 
     if(jwtHeader == null || jwtHeader.startsWith("bearer")) {
       chain.doFilter(request, response);
       return;
     }
 
-    String jwtToken = request.getHeader(JwtProperties.HEADER_STRING).replace(JwtProperties.TOKEN_PREFIX, "");
-    String username = JWT.require(Algorithm.HMAC512(JwtProperties.SECRET_KEY)).build().verify(jwtToken).getClaim("username").asString();
+    String jwtToken = request.getHeader(JwtUtil.HEADER_STRING).replace(JwtUtil.TOKEN_PREFIX, "");
+    String username = JwtUtil.getUsername(jwtToken);
 
     if(username != null) {
       User userEntity = userRepository.findByUsername(username).get();
