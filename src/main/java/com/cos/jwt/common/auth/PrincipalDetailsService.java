@@ -2,7 +2,6 @@ package com.cos.jwt.common.auth;
 
 import com.cos.jwt.business.user.application.UserRepository;
 import com.cos.jwt.common.error.ErrorCode;
-import com.cos.jwt.common.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

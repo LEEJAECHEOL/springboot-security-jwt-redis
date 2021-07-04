@@ -2,12 +2,15 @@ package com.cos.jwt.business.auth.api;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.SignatureVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.cos.jwt.business.auth.application.AuthService;
 import com.cos.jwt.business.auth.form.AuthForm.*;
 import com.cos.jwt.business.user.application.UserService;
 import com.cos.jwt.business.user.entity.User;
 import com.cos.jwt.common.error.ErrorCode;
 import com.cos.jwt.common.error.exception.BusinessException;
+import com.cos.jwt.common.jwt.JwtProperties;
 import com.cos.jwt.common.response.ApiResponse;
 import com.cos.jwt.common.response.ResponseDto;
 import com.cos.jwt.common.util.CookieUtil;
@@ -22,6 +25,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,14 +50,22 @@ public class AuthController {
   }
 
   @PostMapping("/refresh")
-  public ResponseEntity<ResponseDto> refresh(HttpServletResponse response){
+  public ResponseEntity<ResponseDto> refresh(HttpServletResponse response) {
     // 1. 쿠키에서 refresh 토큰 가져오기
     Cookie cookie = getRefreshCookie();
     String refreshToken = cookie.getValue();
     String redisUsername = redisUtil.getData(refreshToken);
 
     // 2. 토큰 검증
-    String tokenUsername = JwtUtil.getUsername(refreshToken);
+    String tokenUsername = "";
+//    System.out.println("is run?");
+    try{
+      tokenUsername = JwtUtil.getUsernameFromToken(refreshToken);
+    }catch (SignatureVerificationException s){
+      return ApiResponse.set(new ResponseDto(ErrorCode.INVALID_SIGNATURE_VERIFICATION));
+    }catch (TokenExpiredException t){
+      return ApiResponse.set(new ResponseDto(ErrorCode.EXPIRED_TOKEN));
+    }
 
     // 3. 토큰의 username 동일한지 체크
     compareUsername(redisUsername, tokenUsername);
@@ -74,31 +86,15 @@ public class AuthController {
     return ApiResponse.set(new ResponseDto(HttpStatus.OK.value(), "정상적으로 처리되었습니다."));
   }
 
-//  @PostMapping("/logout")
-//  public ResponseEntity<ResponseDto> logout(HttpServletResponse response, HttpSession session){
-//    System.out.println("is run?");
-//    Cookie cookie = getRefreshCookie();
-//    String refreshToken = cookie.getValue();
-//    // 1. refresh 토큰 제거
-//    redisUtil.deleteData(refreshToken);
-//    // 2. 쿠키 제거
-//    cookie = CookieUtil.removeCookie(cookie);
-//    response.addCookie(cookie);
-//    // 3. 세션 삭제
-//    session.invalidate();
-//    response.addHeader(JwtUtil.HEADER_STRING, "");
-//    return ApiResponse.set(new ResponseDto(HttpStatus.OK.value(), "로그아웃 완료"));
-//  }
-
   private void setNewRedis(String refreshToken, User user, String newRefreshToken) {
     redisUtil.deleteData(refreshToken);
-    redisUtil.setDataExpire(newRefreshToken, user.getUsername(), JwtUtil.REFRESH_TOKEN_EXPIRE_TIME);
+    redisUtil.setDataExpire(newRefreshToken, user.getUsername(), JwtProperties.REFRESH_TOKEN_EXPIRE_TIME);
   }
 
   private void setNewCookie(HttpServletResponse response, Cookie cookie, String newJwtToken, String newRefreshToken) {
     cookie = CookieUtil.updateCookie(cookie, newRefreshToken);
 
-    response.addHeader(JwtUtil.HEADER_STRING, JwtUtil.TOKEN_PREFIX + newJwtToken);
+    response.addHeader(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX + newJwtToken);
     response.addCookie(cookie);
   }
 
@@ -109,7 +105,7 @@ public class AuthController {
   }
 
   private Cookie getRefreshCookie() {
-    Cookie refreshCookie = CookieUtil.getCookie(JwtUtil.REFRESH_TOKEN_NAME);
+    Cookie refreshCookie = CookieUtil.getCookie(JwtProperties.REFRESH_TOKEN_NAME);
     if(refreshCookie == null){
       throw new BusinessException(ErrorCode.NOT_FOUND_REFRESH_TOKEN);
     }else{

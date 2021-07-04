@@ -1,5 +1,6 @@
 package com.cos.jwt.common.util;
 
+import com.cos.jwt.common.jwt.JwtProperties;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -11,7 +12,7 @@ public class CookieUtil {
   public static Cookie createCookie(String cookieName, String value){
     Cookie cookie = new Cookie(cookieName, value);
     cookie.setHttpOnly(true);
-    cookie.setMaxAge((int) JwtUtil.REFRESH_TOKEN_EXPIRE_TIME / 1000);
+    cookie.setMaxAge((int) JwtProperties.REFRESH_TOKEN_EXPIRE_TIME / 1000);
     cookie.setPath("/");
     return cookie;
   }
@@ -19,7 +20,7 @@ public class CookieUtil {
   public static Cookie updateCookie(Cookie cookie, String value){
     cookie.setValue(value);
     cookie.setHttpOnly(true);
-    cookie.setMaxAge((int) JwtUtil.REFRESH_TOKEN_EXPIRE_TIME / 1000);
+    cookie.setMaxAge((int) JwtProperties.REFRESH_TOKEN_EXPIRE_TIME / 1000);
     cookie.setPath("/");
     return cookie;
   }

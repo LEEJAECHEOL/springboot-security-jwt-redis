@@ -1,5 +1,7 @@
 package com.cos.jwt.common.jwt;
 
+import com.auth0.jwt.exceptions.SignatureVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.cos.jwt.business.user.application.UserRepository;
 import com.cos.jwt.business.user.entity.User;
 import com.cos.jwt.common.auth.PrincipalDetails;
@@ -16,7 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-// 권한이나 인증이 필요한 특정 주소를 요청했을 때 위 필터를 무조건 타게 되어있음.
+
 public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
   private UserRepository userRepository;
@@ -29,16 +31,25 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
     throws IOException, ServletException {
-
-    String jwtHeader = request.getHeader(JwtUtil.HEADER_STRING);
+    String jwtHeader = request.getHeader(JwtProperties.HEADER_STRING);
 
     if(jwtHeader == null || jwtHeader.startsWith("bearer")) {
       chain.doFilter(request, response);
       return;
     }
 
-    String jwtToken = request.getHeader(JwtUtil.HEADER_STRING).replace(JwtUtil.TOKEN_PREFIX, "");
-    String username = JwtUtil.getUsername(jwtToken);
+    String jwtToken = request.getHeader(JwtProperties.HEADER_STRING).replace(JwtProperties.TOKEN_PREFIX, "");
+    String username = "";
+
+    try{
+      username = JwtUtil.getUsernameFromToken(jwtToken);
+    }catch (SignatureVerificationException s){
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "잘못된 토큰 서명입니다.");
+      return;
+    }catch (TokenExpiredException t){
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "만료된 토큰입니다.");
+      return;
+    }
 
     if(username != null) {
       User userEntity = userRepository.findByUsername(username).get();

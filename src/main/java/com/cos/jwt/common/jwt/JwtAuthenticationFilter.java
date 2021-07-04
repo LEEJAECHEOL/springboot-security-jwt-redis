@@ -45,11 +45,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     String jwtToken = JwtUtil.generateToken(principalDetails.getUser());
     String refreshToken = JwtUtil.generateRefreshToken(principalDetails.getUser());
-    redisUtil.setDataExpire(refreshToken, principalDetails.getUsername(), JwtUtil.REFRESH_TOKEN_EXPIRE_TIME);
+    redisUtil.setDataExpire(refreshToken, principalDetails.getUsername(), JwtProperties.REFRESH_TOKEN_EXPIRE_TIME);
 
-    Cookie cookie = CookieUtil.createCookie(JwtUtil.REFRESH_TOKEN_NAME, refreshToken);
+    Cookie cookie = CookieUtil.createCookie(JwtProperties.REFRESH_TOKEN_NAME, refreshToken);
 
-    response.addHeader(JwtUtil.HEADER_STRING, JwtUtil.TOKEN_PREFIX + jwtToken);
+    response.addHeader(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX + jwtToken);
     response.addCookie(cookie);
 
   }
