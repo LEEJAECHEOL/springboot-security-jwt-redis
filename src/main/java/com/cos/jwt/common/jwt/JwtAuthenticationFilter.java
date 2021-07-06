@@ -40,18 +40,14 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
   @Override
   protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
                                           Authentication authResult) {
-
     PrincipalDetails principalDetails = (PrincipalDetails)authResult.getPrincipal();
-
     String jwtToken = JwtUtil.generateToken(principalDetails.getUser());
     String refreshToken = JwtUtil.generateRefreshToken(principalDetails.getUser());
-    redisUtil.setDataExpire(refreshToken, principalDetails.getUsername(), JwtProperties.REFRESH_TOKEN_EXPIRE_TIME);
-
     Cookie cookie = CookieUtil.createCookie(JwtProperties.REFRESH_TOKEN_NAME, refreshToken);
 
+    redisUtil.setDataExpire(refreshToken, principalDetails.getUsername(), JwtProperties.REFRESH_TOKEN_EXPIRE_TIME);
     response.addHeader(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX + jwtToken);
     response.addCookie(cookie);
-
   }
 
   private User getUser(HttpServletRequest request) {
