@@ -16,7 +16,11 @@ public enum ErrorCode {
   EXIST_USERNAME(400, "A004003", "이미 사용 중인 아이디입니다."),
   NOT_FOUND_REFRESH_TOKEN(400, "A004004", "RefreshToken을 찾을 수 없습니다."),
   EXPIRED_TOKEN(401, "A004005", "만료된 토큰입니다."),
-  INVALID_SIGNATURE_VERIFICATION(401, "A004006", "잘못된 토큰 서명입니다.")
+  INVALID_SIGNATURE_VERIFICATION(401, "A004006", "잘못된 토큰 서명입니다."),
+
+  // Book
+  NOT_FOUND_BOOK(400, "B004001", "해당 책을 찾을 수 없습니다.")
+
 
   ;
 
